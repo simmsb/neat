@@ -1,0 +1,6 @@
+# ignore all examples used in tests
+example*
+
+.vscode/
+.DS_Store
+neat
