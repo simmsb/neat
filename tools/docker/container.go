@@ -22,6 +22,7 @@ type NeatContainer struct {
 	Image       string            `mapstructure:"image"`
 	Volumes     map[string]string `mapstructure:"volumes"`
 	Labels      map[string]string `mapstructure:"labels"`
+	Networks    []string          `mapstructure:"networks"`
 	Environment map[string]string `mapstructure:"environment"`
 	Privileged  bool              `mapstructure:"privileged"`
 	TTY         bool              `mapstructure:"tty"`
@@ -89,6 +90,13 @@ func (c *NeatContainer) Create() error {
 	if err != nil {
 		log.Errorln(err.Error())
 		return fmt.Errorf("failed to create new container")
+	}
+	for _, net := range c.Networks {
+		err := docker.NetworkConnect(ctx, net, respose.ID, nil)
+		if err != nil {
+			log.Errorln(err.Error())
+			return fmt.Errorf("failed to add network to container")
+		}
 	}
 	c.ID = respose.ID
 	return nil
