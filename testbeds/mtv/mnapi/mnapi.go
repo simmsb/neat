@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -40,6 +41,7 @@ func NewClient(mnTarget string, customHeaders map[string]string) (*Client, error
 	client.restClient.SetHostURL(mnTarget + defaultAPIPrefix)
 	client.restClient.SetError(&RequestError{})
 	client.restClient.SetHeaders(customHeaders)
+	client.restClient.SetTimeout(5 * time.Second)
 	return &client, nil
 }
 

@@ -1,4 +1,7 @@
-FROM golang:1.16-alpine
+FROM golang:1.16
+
+ENV CGO_ENABLED=0
+ENV GOOS=linux
 
 WORKDIR /app
 

@@ -9,6 +9,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/api/types/strslice"
 )
 
@@ -64,9 +65,13 @@ func (c *NeatContainer) Create() error {
 	for label, value := range c.Labels {
 		prefixedLabels[fmt.Sprintf("%s.%s", neatLabelPrefix, label)] = value
 	}
-	volumeBinds := make([]string, 0)
+	volumeBinds := make([]mount.Mount, 0)
 	for host, container := range c.Volumes {
-		volumeBinds = append(volumeBinds, fmt.Sprintf("%s:%s", host, container))
+		volumeBinds = append(volumeBinds, mount.Mount{
+			Type:   mount.TypeBind,
+			Source: host,
+			Target: container,
+		})
 	}
 	containerConfig := &container.Config{
 		Image:        c.Image,
@@ -79,7 +84,7 @@ func (c *NeatContainer) Create() error {
 	}
 	hostConfig := &container.HostConfig{
 		Privileged:  c.Privileged,
-		Binds:       volumeBinds,
+		Mounts:      volumeBinds,
 		NetworkMode: "bridge",
 		CapAdd:      strslice.StrSlice{"sys_nice"},
 		Resources:   container.Resources{
@@ -145,12 +150,18 @@ func (c *NeatContainer) Remove() error {
 	return nil
 }
 
-func (c *NeatContainer) GetIP() (string, error) {
+func (c *NeatContainer) GetIPS() ([]string, error) {
 	container, err := c.inspect()
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
-	return container.NetworkSettings.IPAddress, nil
+
+	ips := []string{}
+	for _, net := range container.NetworkSettings.Networks {
+		ips = append(ips, net.IPAddress)
+	}
+
+	return ips, nil
 }
 
 func (c *NeatContainer) Running() (bool, error) {

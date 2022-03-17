@@ -42,6 +42,7 @@ func create(testbed *testbeds.Testbed) error {
 		Volumes: map[string]string{
 			filepath.Join(currentDir, parsedConfig.Files): "/mnt",
 		},
+		Networks: parsedConfig.Networks,
 		Labels: map[string]string{
 			"name":    testbed.Name,
 			"variant": testbed.VariantName,
@@ -78,21 +79,28 @@ func start(testbed *testbeds.Testbed) error {
 		if err != nil {
 			return err
 		}
-		ip, err := container.GetIP()
+		ips, err := container.GetIPS()
 		if err != nil {
 			return err
 		}
+		fmt.Printf("\tIP of test container: %s\n", ips)
+	outer:
 		for {
 			//TODO: don't hardcode so much of this
 			// if time.Since(start) > (300 * time.Second) {
 			// 	return fmt.Errorf("failed to start mtv api")
 			// }
-			client, err := mnapi.NewClient("http://"+ip+":8080", nil)
-			if err != nil {
-				return fmt.Errorf("failed to create mtv client")
-			}
-			if _, err = client.GetNodes(); err == nil {
-				break
+
+			for _, ip := range ips {
+				client, err := mnapi.NewClient("http://"+ip+":8080", nil)
+				if err != nil {
+					return fmt.Errorf("failed to create mtv client")
+				}
+				if nodes, err := client.GetNodes(); err == nil {
+					fmt.Println("nodes: ", nodes)
+					testbed.VariantConfig["MNApiIP"] = ip
+					break outer
+				}
 			}
 			time.Sleep(500 * time.Millisecond)
 		}
@@ -141,17 +149,15 @@ func remove(testbed *testbeds.Testbed) error {
 }
 
 func doPing(testbed *testbeds.Testbed, request types.PingRequest) (*types.PingResponse, error) {
-	if container, ok := containers[testbed.Name]; !ok {
+	if _, ok := containers[testbed.Name]; !ok {
 		return nil, fmt.Errorf("mtv testbed has no container")
 	} else {
-		ip, err := container.GetIP()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get container ip")
-		}
+		ip := testbed.VariantConfig["MNApiIP"].(string)
 		client, err := mnapi.NewClient("http://"+ip+":8080", nil)
 		if err != nil {
 			return nil, err
 		}
+		fmt.Println("trying to ping %s", ip)
 		pingData, err := client.PingSet([]string{request.Sender, request.Target})
 		if err != nil {
 			return nil, err
