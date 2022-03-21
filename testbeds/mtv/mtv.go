@@ -163,8 +163,32 @@ func doPing(testbed *testbeds.Testbed, request types.PingRequest) (*types.PingRe
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("trying to ping %s", ip)
 		pingData, err := client.PingSet([]string{request.Sender, request.Target})
+		if err != nil {
+			return nil, err
+		}
+		for _, pingResponse := range pingData {
+			if pingResponse.Sender == request.Sender {
+				return &types.PingResponse{
+					Sent:     uint(pingResponse.Sent),
+					Received: uint(pingResponse.Received),
+				}, nil
+			}
+		}
+	}
+	return nil, errors.New("failed to get ping response")
+}
+
+func doPingFrom(testbed *testbeds.Testbed, request types.PingRequest) (*types.PingResponse, error) {
+	if _, ok := containers[testbed.Name]; !ok {
+		return nil, fmt.Errorf("mtv testbed has no container")
+	} else {
+		ip := testbed.VariantConfig["MNApiIP"].(string)
+		client, err := mnapi.NewClient("http://"+ip+":8080", nil)
+		if err != nil {
+			return nil, err
+		}
+		pingData, err := client.PingFrom(request.Sender, request.Target)
 		if err != nil {
 			return nil, err
 		}

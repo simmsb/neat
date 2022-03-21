@@ -43,3 +43,19 @@ func (c *Client) PingSet(nodes []string) (map[string]*PingData, error) {
 	return pingData, nil
 
 }
+
+func (c *Client) PingFrom(host string, dst string) (map[string]*PingData, error) {
+	var pingData map[string]*PingData
+	resp, err := c.restClient.R().
+		SetHeader("Accept", "application/json").
+		SetResult(&pingData).SetQueryParam("host", host).SetQueryParam("dst", dst).
+		Get("/pingfrom")
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode() != 200 {
+		return nil, fmt.Errorf("received non-200 status code (%d)", resp.StatusCode())
+	}
+	return pingData, nil
+
+}

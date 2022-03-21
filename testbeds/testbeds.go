@@ -111,3 +111,6 @@ func Remove(id string) error {
 func (testbed *Testbed) DoPing(request types.PingRequest) (*types.PingResponse, error) {
 	return testbed.variant.DoPing(testbed, request)
 }
+func (testbed *Testbed) DoPingFrom(request types.PingRequest) (*types.PingResponse, error) {
+	return testbed.variant.DoPingFrom(testbed, request)
+}

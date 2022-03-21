@@ -40,6 +40,7 @@ var variant = testbeds.Variant{
 	HookArguments: getArguments,
 
 	DoPing: doPing,
+	DoPingFrom: doPingFrom,
 }
 
 func parseConfig(config map[string]interface{}) (*Config, error) {

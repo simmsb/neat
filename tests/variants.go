@@ -5,6 +5,7 @@ import (
 
 	"github.com/willfantom/neat/testbeds"
 	"github.com/willfantom/neat/tests/ping"
+	"github.com/willfantom/neat/tests/ping_from"
 )
 
 type Variant struct {
@@ -43,5 +44,12 @@ var variants = map[string]Variant{
 		ValidateConfiguration: ping.ValidateConfiguration,
 		Run:                   ping.Run,
 		EvaluateExpression:    ping.Evaluate,
+	},
+	"ping_from": {
+		Name:                  "PingFrom",
+		Description:           "Check connectivity between a node and an arbitrary IP address using ICMP echo packets",
+		ValidateConfiguration: ping_from.ValidateConfiguration,
+		Run:                   ping_from.Run,
+		EvaluateExpression:    ping_from.Evaluate,
 	},
 }

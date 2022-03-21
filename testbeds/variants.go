@@ -21,6 +21,7 @@ type Variant struct {
 	HookArguments func(path string, testbed *Testbed) []string
 
 	DoPing func(testbed *Testbed, request types.PingRequest) (*types.PingResponse, error)
+	DoPingFrom func(testbed *Testbed, request types.PingRequest) (*types.PingResponse, error)
 }
 
 func VariantExists(name string) bool {
