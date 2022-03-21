@@ -11,11 +11,12 @@ import (
 )
 
 type Config struct {
-	Image    string   `mapstructure:"image"`
-	Libvirt  bool     `mapstructure:"libvirt"`
-	Files    string   `mapstructure:"files"`
-	Command  string   `mapstructure:"command"`
-	Networks []string `mapstructure:"networks"`
+	Image       string            `mapstructure:"image"`
+	Libvirt     bool              `mapstructure:"libvirt"`
+	Files       string            `mapstructure:"files"`
+	ExtraMounts map[string]string `mapstructure:"extra_mounts"`
+	Command     string            `mapstructure:"command"`
+	Networks    []string          `mapstructure:"networks"`
 }
 
 const (

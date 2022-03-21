@@ -36,12 +36,18 @@ func create(testbed *testbeds.Testbed) error {
 	}
 	start := time.Now()
 	currentDir, _ := os.Getwd()
+
+	// warning: brain rot ahead
+	volumes := make(map[string]string, len(parsedConfig.ExtraMounts))
+	for k, v := range parsedConfig.ExtraMounts {
+		volumes[k] = v
+	}
+	volumes[filepath.Join(currentDir, parsedConfig.Files)] = "/mnt"
+
 	container := docker.NeatContainer{
 		Name:  testbed.Name,
 		Image: parsedConfig.Image,
-		Volumes: map[string]string{
-			filepath.Join(currentDir, parsedConfig.Files): "/mnt",
-		},
+		Volumes: volumes,
 		Networks: parsedConfig.Networks,
 		Labels: map[string]string{
 			"name":    testbed.Name,
